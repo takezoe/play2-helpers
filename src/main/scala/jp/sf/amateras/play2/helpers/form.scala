@@ -5,7 +5,7 @@ import play.api.data.Form
 import org.apache.commons.lang3.StringEscapeUtils
 
 /**
- * Provides helpers which generate form input elements.
+ * Provides helpers which generate simple form input elements.
  */
 object form {
 
@@ -18,6 +18,15 @@ object form {
         StringEscapeUtils.escapeHtml4(form(name).value.getOrElse("")), 
         makeAdditionalAttributes(attrs: _*)))
   
+  /**
+   * Generates &lt;textarea ... &gt;
+   */
+  def textarea(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
+    Html("<textarea name=\"%s\" %s>%s</textarea>".format(
+        StringEscapeUtils.escapeHtml4(name),
+        makeAdditionalAttributes(attrs: _*),
+        StringEscapeUtils.escapeHtml4(form(name).value.getOrElse(""))))
+        
   /**
    * Generates &lt;input type="hidden" ... /&gt;
    */
