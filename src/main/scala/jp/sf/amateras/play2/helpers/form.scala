@@ -1,7 +1,7 @@
 package jp.sf.amateras.play2.helpers
 
 import play.api.templates.Html
-import play.api.data.Form
+import play.api.data.Field
 import org.apache.commons.lang3.StringEscapeUtils
 
 /**
@@ -12,41 +12,69 @@ object form {
   /**
    * Generates &lt;input type="text" ... /&gt;
    */
-  def inputText(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
-    Html("<input type=\"text\" name=\"%s\" value=\"%s\" %s/>".format(
-        StringEscapeUtils.escapeHtml4(name), 
-        StringEscapeUtils.escapeHtml4(form(name).value.getOrElse("")), 
+  def inputText(field: Field, attrs: (Symbol, Any)*): Html =
+    Html("<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\" %s/>".format(
+        StringEscapeUtils.escapeHtml4(field.id),
+        StringEscapeUtils.escapeHtml4(field.name),
+        StringEscapeUtils.escapeHtml4(field.value.getOrElse("")), 
         makeAdditionalAttributes(attrs: _*)))
   
   /**
    * Generates &lt;input type="password" ... /&gt;
    */
-  def inputPassword(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
-    Html("<input type=\"password\" name=\"%s\" value=\"%s\" %s/>".format(
-        StringEscapeUtils.escapeHtml4(name), 
-        StringEscapeUtils.escapeHtml4(form(name).value.getOrElse("")), 
+  def inputPassword(field: Field, attrs: (Symbol, Any)*): Html =
+    Html("<input type=\"password\" id=\"%s\" name=\"%s\" value=\"%s\" %s/>".format(
+        StringEscapeUtils.escapeHtml4(field.id),
+        StringEscapeUtils.escapeHtml4(field.name),
+        StringEscapeUtils.escapeHtml4(field.value.getOrElse("")), 
         makeAdditionalAttributes(attrs: _*)))
   
   /**
    * Generates &lt;textarea ... &gt;
    */
-  def textarea(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
-    Html("<textarea name=\"%s\" %s>%s</textarea>".format(
-        StringEscapeUtils.escapeHtml4(name),
+  def textarea(field: Field, attrs: (Symbol, Any)*): Html =
+    Html("<textarea id=\"%s\" name=\"%s\" %s>%s</textarea>".format(
+        StringEscapeUtils.escapeHtml4(field.id),
+        StringEscapeUtils.escapeHtml4(field.name),
         makeAdditionalAttributes(attrs: _*),
-        StringEscapeUtils.escapeHtml4(form(name).value.getOrElse(""))))
+        StringEscapeUtils.escapeHtml4(field.value.getOrElse(""))))
         
   /**
    * Generates &lt;input type="hidden" ... /&gt;
    */
-  def inputHidden(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
-    Html("<input type=\"hidden\" name=\"%s\" value=\"%s\" %s/>".format(
-        StringEscapeUtils.escapeHtml4(name), 
-        StringEscapeUtils.escapeHtml4(form(name).value.getOrElse("")), 
+  def inputHidden(field: Field, attrs: (Symbol, Any)*): Html =
+    Html("<input type=\"hidden\" id=\"%s\" name=\"%s\" value=\"%s\" %s/>".format(
+        StringEscapeUtils.escapeHtml4(field.id), 
+        StringEscapeUtils.escapeHtml4(field.name), 
+        StringEscapeUtils.escapeHtml4(field.value.getOrElse("")), 
         makeAdditionalAttributes(attrs: _*)))
 
-  private def makeAdditionalAttributes(attrs: (Symbol, String)*): String =
+  /**
+   * Generates &lt;input type="checkbox" ... /&gt;
+   */
+  def checkbox(field: Field, attrs: (Symbol, Any)*): Html = {
+    val value = attrs.collectFirst {
+      case ('value, value) => value.toString
+    } getOrElse("true")
+    
+    Html("<input type=\"checkbox\" id=\"%s\" name=\"%s\" value=\"%s\" %s/>".format(
+        StringEscapeUtils.escapeHtml4(field.id), 
+        StringEscapeUtils.escapeHtml4(field.name), 
+        StringEscapeUtils.escapeHtml4(value),
+        (if(attrs.map(_._1).contains('checked) || field.value == Some(value)) "checked " else "") +
+        makeAdditionalAttributes(attrs.filter(_._1 match {
+          case 'value|'label|'checked => false
+          case _ => true
+        }): _*)) + (attrs.collectFirst {
+          case ('label, value) => "<label for=\"%s\">%s</label>".format(
+            StringEscapeUtils.escapeHtml4(field.id), 
+            StringEscapeUtils.escapeHtml4(value.toString) 
+          )
+        } getOrElse("")))
+  }
+  
+  private def makeAdditionalAttributes(attrs: (Symbol, Any)*): String =
     attrs.map { case (key, value) =>
-      "%s=\"%s\"".format(key.name, StringEscapeUtils.escapeHtml4(value))
+      "%s=\"%s\"".format(key.name, StringEscapeUtils.escapeHtml4(value.toString))
     }.mkString(" ")
 }
