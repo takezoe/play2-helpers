@@ -19,6 +19,15 @@ object form {
         makeAdditionalAttributes(attrs: _*)))
   
   /**
+   * Generates &lt;input type="password" ... /&gt;
+   */
+  def inputPassword(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
+    Html("<input type=\"password\" name=\"%s\" value=\"%s\" %s/>".format(
+        StringEscapeUtils.escapeHtml4(name), 
+        StringEscapeUtils.escapeHtml4(form(name).value.getOrElse("")), 
+        makeAdditionalAttributes(attrs: _*)))
+  
+  /**
    * Generates &lt;textarea ... &gt;
    */
   def textarea(form: Form[_], name: String, attrs: (Symbol, String)*): Html =
