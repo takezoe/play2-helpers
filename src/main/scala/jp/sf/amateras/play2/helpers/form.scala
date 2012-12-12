@@ -73,6 +73,23 @@ object form {
         } getOrElse("")))
   }
   
+  /**
+   * Generates &lt;select ...&gt;
+   */
+  def select(field: Field, options: Seq[(String, Any)], attrs: (Symbol, Any)*): Html = {
+    Html("<select id=\"%s\" name=\"%s\" %s>".format(
+        StringEscapeUtils.escapeHtml4(field.id),
+        StringEscapeUtils.escapeHtml4(field.name),
+        makeAdditionalAttributes(attrs: _*)) + 
+        options.map { case (label, value) =>
+          "<option value=\"%s\"%s>%s</option>".format(
+              StringEscapeUtils.escapeHtml4(value.toString),
+              (if(field.value == Some(value.toString)) " selected" else ""),
+              StringEscapeUtils.escapeHtml4(label))
+        }.mkString + 
+        "</select>")
+  }
+  
   private def makeAdditionalAttributes(attrs: (Symbol, Any)*): String =
     attrs.map { case (key, value) =>
       "%s=\"%s\"".format(key.name, StringEscapeUtils.escapeHtml4(value.toString))
